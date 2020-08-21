@@ -1,10 +1,11 @@
 import React, { useState, useCallback } from 'react'
+import { graphql　} from "gatsby"
 import PropTypes from 'prop-types'
 import Carousel, { Modal, ModalGateway } from 'react-images'
 import GalleryItem from './GalleryItem'
 import { DEFAULT_IMAGES } from '../constants/defaultImages'
 
-const Gallery = ({ images = DEFAULT_IMAGES }) => {
+const Gallery = ({ data }) => {
   const [lightboxIsOpen, setLightboxIsOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -15,16 +16,17 @@ const Gallery = ({ images = DEFAULT_IMAGES }) => {
 
   return (
     <div>
-      {images && (<div className="row">
-        {images.map((obj, i) => {
+      {data && (<div className="row">
+        {data.allMicrocmsWorks.edges.map((edge, i) => {
+        const work = edge.node
         return (<GalleryItem
-          id={obj.id}
-          source={obj.source}
-          thumbnail={obj.thumbnail}
-          caption={obj.caption}
-          description={obj.description}
-          position={obj.position}
-          toggleLightbox={obj.toggleLightbox}
+          id={work.id}
+          source={work.image.url}
+          thumbnail={work.image.url}
+          caption={work.title}
+          description={work.description}
+          position={work.position}
+          toggleLightbox={work.toggleLightbox}
           position={i}
           toggleLightbox={toggleLightbox}
         />); 
@@ -34,7 +36,7 @@ const Gallery = ({ images = DEFAULT_IMAGES }) => {
       <ModalGateway>
         {lightboxIsOpen && (
           <Modal onClose={toggleLightbox}>
-            <Carousel currentIndex={selectedIndex} views={images} />
+            <Carousel currentIndex={selectedIndex} views={data} />
           </Modal>
         )}
       </ModalGateway>
@@ -46,5 +48,22 @@ Gallery.displayName = 'Gallery'
 Gallery.propTypes = {
   images: PropTypes.array,
 }
+
+export const query = graphql`
+ {
+   allMicrocmsWorks(sort: {fields: createdAt, order: DESC}) {
+    edges {
+      node {
+        id
+        title
+        image {
+          url
+        }
+        description
+      }
+    }
+  }
+ }
+`
 
 export default Gallery
